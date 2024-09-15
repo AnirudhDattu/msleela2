@@ -1,4 +1,4 @@
-
+fpdf==1.7.2                # For generating PDF files
 google-generativeai==0.2.0  # Library for Google's generative AI model
 
                  
