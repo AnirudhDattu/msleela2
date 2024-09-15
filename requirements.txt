@@ -1,0 +1,5 @@
+streamlit==1.25.0          # Ensure Streamlit version is compatible with your setup
+requests==2.31.0           # For making HTTP requests to the Fitbit API
+google-generativeai==0.2.0  # Library for Google's generative AI model
+fpdf==1.7.2                # For generating PDF files
+sqlite3                    # SQLite database support (built-in, doesn't need to be installed separately)
