@@ -61,7 +61,7 @@ def fetch_fitbit_data():
 #function for generating workout plan
 #ask user goals for personalised workout recommendation
 #prompt for the gen ai model
-def generate_formatted_response(fitbit_data, user_goals):
+def generate_workout_plan(fitbit_data, user_goals):
     prompt = f"""
 You are a professional fitness coach designing personalized workout plans for users based on their fitness data and goals.
 
@@ -75,7 +75,7 @@ The user's goals and preferences are as follows:
 - Main fitness goal: {user_goals['goal_type']}
 - Preferred workout style: {user_goals['workout_preference']}
 - Available time per day: {user_goals['time_available']} minutes
-- Diet plan requested: {user_goals['formatted_response']}
+- Diet plan requested: {user_goals['diet_plan']}
 - Access to weights: {user_goals['weights']}
 - Preferred dietary cuisine: {user_goals['diet_cuisine']}
 
@@ -83,7 +83,6 @@ Using this data, generate a structured workout plan. Give the plan only for one 
 
 Make the plan interactive and motivating, incorporating suggestions for improvement, rest, and recovery.
 """
-    
 
     #enerate response
     response = model.generate_content(prompt)
@@ -96,47 +95,37 @@ Make the plan interactive and motivating, incorporating suggestions for improvem
     pdf.cell(0, 5, txt="personalized workout plan", ln=True)
     pdf.ln(10)
 
-    # Warm-Up
-    pdf.set_font("Arial", 'B', 14)
-    pdf.cell(200, 10, txt="Warm-Up", ln=True)
-    pdf.set_font("Arial", size=12)
-    for exercise in formatted_response["warm_up"]:
-        pdf.cell(200, 10, txt=f"{exercise['exercise']} - Sets: {exercise['sets']}, Reps: {exercise['reps']}, Duration: {exercise['duration']}", ln=True)
-
+    # Add user's current fitness data
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 5, txt="User's Current Fitness Data:", ln=True)
+    pdf.ln(2)
+    pdf.cell(0, 5, txt=f"Steps: {fitbit_data['steps']}", ln=True)
+    pdf.cell(0, 5, txt=f"Calories burned: {fitbit_data['calories_burned']}", ln=True)
+    pdf.cell(0, 5, txt=f"Sleep duration: {fitbit_data['sleep_duration']} minutes", ln=True)
+    pdf.cell(0, 5, txt=f"Calories consumed: {fitbit_data['calories_consumed']}", ln=True)
     pdf.ln(5)
 
-    # Main Workout
-    pdf.set_font("Arial", 'B', 14)
-    pdf.cell(200, 10, txt="Main Workout", ln=True)
-    pdf.set_font("Arial", size=12)
-    for exercise in formatted_response["main_workout"]:
-        pdf.cell(200, 10, txt=f"{exercise['exercise']} - Sets: {exercise['sets']}, Reps: {exercise['reps']}, Intensity: {exercise['intensity']}", ln=True)
-
+    # Add user's goals and preferences
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 5, txt="User's Goals and Preferences:", ln=True)
+    pdf.ln(2)
+    pdf.cell(0, 5, txt=f"Main fitness goal: {user_goals['goal_type']}", ln=True)
+    pdf.cell(0, 5, txt=f"Preferred workout style: {user_goals['workout_preference']}", ln=True)
+    pdf.cell(0, 5, txt=f"Available time per day: {user_goals['time_available']} minutes", ln=True)
+    pdf.cell(0, 5, txt=f"Diet plan requested: {user_goals['diet_plan']}", ln=True)
+    pdf.cell(0, 5, txt=f"Access to weights: {user_goals['weights']}", ln=True)
+    pdf.cell(0, 5, txt=f"Preferred dietary cuisine: {user_goals['diet_cuisine']}", ln=True)
     pdf.ln(5)
 
-    # Cool Down
-    pdf.set_font("Arial", 'B', 14)
-    pdf.cell(200, 10, txt="Cool Down", ln=True)
-    pdf.set_font("Arial", size=12)
-    for exercise in formatted_response["cool_down"]:
-        pdf.cell(200, 10, txt=f"{exercise['exercise']} - Sets: {exercise['sets']}, Reps: {exercise['reps']}, Intensity: {exercise['intensity']}", ln=True)
+    # Add workout plan
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 5, txt="Workout Plan:", ln=True)
+    pdf.ln(2)
+    pdf.multi_cell(0, 5, txt=formatted_response, align="L")
 
-    pdf.ln(10)
+    pdf.output("generated_workout_plan.pdf")
 
-    # Add Diet Plan Section
-    pdf.set_font("Arial", 'B', 16)
-    pdf.cell(200, 10, txt="Diet Plan", ln=True, align='C')
-    pdf.ln(10)
-
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt=f"Breakfast: {formatted_response['breakfast']}", ln=True)
-    pdf.cell(200, 10, txt=f"Lunch: {formatted_response['lunch']}", ln=True)
-    pdf.cell(200, 10, txt=f"Dinner: {formatted_response['dinner']}", ln=True)
-    pdf.cell(200, 10, txt=f"Snacks: {formatted_response['snacks']}", ln=True)
-
-    pdf.output("generated_formatted_response.pdf")
-
-    print("Generated workout plan has been saved to 'generated_formatted_response.pdf'.")
+    print("Generated workout plan has been saved to 'generated_workout_plan.pdf'.")
 
 #main function
 def main():
@@ -158,14 +147,14 @@ def main():
             "goal_type": st.selectbox("What is your main fitness goal?", ["Weight Loss", "Muscle Gain", "Endurance", "Flexibility"]),
             "workout_preference": st.selectbox("What type of workout do you prefer?", ["Yoga", "Running", "Swimming", "Cycling"]),
             "time_available": st.slider("How many minutes do you have available for workout per day?", 30, 120, 60),
-            "formatted_response": st.selectbox("Do you want a diet plan?", ["Yes", "No"]),
+            "diet_plan": st.selectbox("Do you want a diet plan?", ["Yes", "No"]),
             "weights": st.selectbox("Do you have access to weights?", ["Yes", "No"]),
             "diet_cuisine": st.selectbox("What type of cuisine do you prefer?", ["Indian", "Italian", "Chinese", "Mexican"])
         }
 
         if st.button("Generate Workout Plan"):
-            generate_formatted_response(fitbit_data, user_goals)
-            st.write("Your workout plan has been generated. Please check the 'generated_formatted_response.pdf' file.")
+            generate_workout_plan(fitbit_data, user_goals)
+            st.write("Your workout plan has been generated. Please check the 'generated_workout_plan.pdf' file.")
 
     conn.close()
     
